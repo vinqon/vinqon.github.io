@@ -107,7 +107,7 @@
 <ol>
 <li>启动Strongswan之后，就用手机连接了。下面是系统VPN设置页面的配置Demo，通过程序连接基本同理；</li>
 </ol>
-<p><img src="http://vinqon.com/fms2/ROOT/image/iphoneconfig2.jpg" alt="enter image description here"></p>
+<p><img src="http://vinqon.com/fms2/ROOT/image/iphoneconfig2.jpg" width="320px"></p>
 <h4 id="服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置"><a href="#服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置" class="headerlink" title="服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置"></a>服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置</h4><p>这个办法其实很简单，但是用了我蛮多时间去摸索这些配置信息的。下面是服务器的配置方法，打开<code>/usr/local/etc/ipsec.conf</code>，然后加上下面这段配置：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">conn ios_ikev2_xauth_psk</div><div class="line">        keyexchange=ikev2</div><div class="line">        leftid=okvpn</div><div class="line">        left=%defaultroute</div><div class="line">        leftauth=psk</div><div class="line">        leftsubnet=0.0.0.0/0</div><div class="line">        right=%any</div><div class="line">        rightauth=eap-mschapv2</div><div class="line">        rightsourceip=10.31.2.0/24</div><div class="line">        rightsendcert=never</div><div class="line">        eap_identity=%any</div><div class="line">        dpdaction=clear</div><div class="line">        fragmentation=yes</div><div class="line">        auto=add</div></pre></td></tr></table></figure>
 <p>然后，客户端的配置和IPSec的方法基本一直，但是要主要改两个地方：</p>
