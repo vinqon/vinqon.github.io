@@ -83,12 +83,14 @@
       
         <p>之前根据<a href="https://quericy.me/blog/699/" target="_blank" rel="external">CentOS/Ubuntu一键安装IPSEC/IKEV2 VPN服务器</a> 搭建一个VPN服务器，这套方案里面提供了两种方式连接IPSec（即IKEv1）和IKEv2，前者可以通过帐号、密码以及密钥PSK 即可连接，比较方便。后者需要证书，比较麻烦。所以我使用了IPsec作为产品的最终方案。</p>
 <p>最近突然想起这件事情，加上之前调研的实践让我记得IKEv2方案其实更加安全并且稳定。『稳定』的表现是，可以在切换网络依然保持VPN不断开，这是一种不错的体验。所以，打算把目前方案迁移为IKEv2，所以做了一下调研。</p>
-<p>首先是『无证书』问题。对于IKEv2，之前有了解到是可以实现无证书连接，这点很重要，不然得引导用户安装证书才能连接，体验会很差。今天用了蛮多时间调研，发现很多文章里面说的『无证书』并不是指完全不用证书，而是是指客户端连接之前不需要配置证书，但服务器端依然需要。所以，大部分文章提到的IKEv2有两种连接方案是这样的：</p>
-<p>​    1.服务器使用自签发证书，客户端需要提前安装配套证书</p>
-<p>​    2.服务器使用CA证书，则客户端则可免证书</p>
-<p>这两个办法都不是真正的免证书，但是根据<a href="https://zorro.im/strongswan-ikev2-for-ios-without-certificate/" target="_blank" rel="external">用 strongSwan 搭建免证书的 IKEv2 VPN</a> 一文描述，确实可以通过PSK密钥代替证书实现服务器和客户端都无证书的方案，但是这个方案在设置GUI中无法配置，只能通过添加描述文件来配置，挺扯蛋的。但是，我发现这个办法在通过程序配置也是可以的，后面会详细介绍。</p>
-<p>​    3.服务器使用PSK密钥验证，客户端添加带PSK的VPN配置描述文件</p>
-<p>​    4.服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置</p>
+<p>首先是『无证书』问题。对于IKEv2，之前有了解到是可以实现无证书连接，这点很重要，不然得引导用户安装证书才能连接，体验会很差。今天用了一些时间调研，大概有下面这些方案：</p>
+<ol>
+<li>服务器使用自签发证书，客户端需要提前安装配套证书</li>
+<li>服务器使用CA证书，则客户端则可免证书</li>
+<li>服务器使用PSK密钥验证，客户端添加带PSK的VPN配置描述文件</li>
+<li>服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置</li>
+</ol>
+<p>1和2这两个方案都不是真正的免证书，它们出现在很多文章里，但这里的『无证书』并不是指完全不用证书，而是是指客户端连接之前不需要配置证书，但服务器端依然需要。根据<a href="https://zorro.im/strongswan-ikev2-for-ios-without-certificate/" target="_blank" rel="external">用 strongSwan 搭建免证书的 IKEv2 VPN</a> 一文描述，确实可以通过PSK密钥代替证书实现服务器和客户端都无证书的方案（方案3），但是这个方案在设置GUI中无法配置，只能通过添加描述文件来配置，挺扯蛋的。但是，我发现这个办法在通过程序配置也是可以的，也就是第4个方案，网上没有找到任何人提出这个方案，我后面会详细介绍。  </p>
 <p>因为只有2和4方案是无需用户做额外配置，所以下面只讨论这两种方案。</p>
 <h2 id="方案一-服务器使用CA证书"><a href="#方案一-服务器使用CA证书" class="headerlink" title="方案一/服务器使用CA证书"></a>方案一/服务器使用CA证书</h2><p>首先，弄个CA证书，CA证书很多免费的，这边查到了比较多人使用的是Let’s Encrypt SSL，但是有一个缺点就是需要定时续期。以下是配置步骤：</p>
 <p><strong>1.安装Let’s Encrypt SSL的客户端</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">git clone https://github.com/letsencrypt/letsencrypt</div><div class="line">cd letsencrypt</div><div class="line">./letsencrypt-auto --help</div></pre></td></tr></table></figure></p>
