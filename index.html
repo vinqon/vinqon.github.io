@@ -61,7 +61,7 @@
 
   
     
-    <h3 class="article-title"><a href="/2017/02/23/strongswan_ikev2/"><span>Strongswan 配置免证书IKEv2 VPN</span></a></h3>
+    <h3 class="article-title"><a href="/2017/02/23/strongswan_ikev2/"><span>在iOS配置基于Strongswan的免证书IKEv2 VPN</span></a></h3>
     
   
 
@@ -81,7 +81,7 @@
   <div class="article-content">
     <div class="entry">
       
-        <p>之前根据<a href="https://quericy.me/blog/699/" target="_blank" rel="external">CentOS/Ubuntu一键安装IPSEC/IKEV2 VPN服务器</a> 搭建一个VPN服务器，这套方案里面提供了两种方式连接IPSec（即IKEv1）和IKEv2，前者可以通过帐号、密码以及密钥PSK 即可连接，比较方便。后者需要证书，比较麻烦。所以我使用了IPsec作为产品的最终方案。</p>
+        <p>之前根据<a href="https://quericy.me/blog/699/" target="_blank" rel="external">CentOS/Ubuntu一键安装IPSEC/IKEV2 VPN服务器</a> 搭建一个VPN服务器，这套方案里面提供了两种方式连接IPSec（即IKEv1）和IKEv2，前者可以通过帐号、密码以及密钥PSK 即可连接，比较方便。后者需要证书，比较麻烦。所以我使用了IPsec作为iOS客户端产品的最终方案。</p>
 <p>最近突然想起这件事情，加上之前调研的实践让我记得IKEv2方案其实更加安全并且稳定。『稳定』的表现是，可以在切换网络依然保持VPN不断开，这是一种不错的体验。所以，打算把目前方案迁移为IKEv2，所以做了一下调研。</p>
 <p>首先是『无证书』问题。对于IKEv2，之前有了解到是可以实现无证书连接，这点很重要，不然得引导用户安装证书才能连接，体验会很差。今天用了一些时间调研，大概有下面这些方案：</p>
 <ol>
@@ -91,7 +91,7 @@
 <li>服务器使用PSK密钥验证，客户端通过程序添加带PSK的VPN配置</li>
 </ol>
 <p>1和2这两个方案都不是真正的免证书，它们出现在很多文章里，但这里的『无证书』并不是指完全不用证书，而是是指客户端连接之前不需要配置证书，但服务器端依然需要。根据<a href="https://zorro.im/strongswan-ikev2-for-ios-without-certificate/" target="_blank" rel="external">用 strongSwan 搭建免证书的 IKEv2 VPN</a> 一文描述，确实可以通过PSK密钥代替证书实现服务器和客户端都无证书的方案（方案3），但是这个方案在设置GUI中无法配置，只能通过添加描述文件来配置，挺扯蛋的。但是，我发现这个办法在通过程序配置也是可以的，也就是第4个方案，网上没有找到任何人提出这个方案，我后面会详细介绍。  </p>
-<p>因为只有2和4方案是无需用户做额外配置，所以下面只讨论这两种方案。</p>
+<p>因为只有2和4方案是无需用户做额外配置，所以下面只讨论这两种方案。另外，需要说明的是，这些方案只有iOS客户端验证成功，其他客户端理论可行，欢迎反馈。</p>
 <h2 id="方案一-服务器使用CA证书"><a href="#方案一-服务器使用CA证书" class="headerlink" title="方案一/服务器使用CA证书"></a>方案一/服务器使用CA证书</h2><p>首先，弄个CA证书，CA证书很多免费的，这边查到了比较多人使用的是Let’s Encrypt SSL，但是有一个缺点就是需要定时续期。以下是配置步骤：</p>
 <p><strong>1.安装Let’s Encrypt SSL的客户端</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">git clone https://github.com/letsencrypt/letsencrypt</div><div class="line">cd letsencrypt</div><div class="line">./letsencrypt-auto --help</div></pre></td></tr></table></figure></p>
 <p><strong>2.执行客户端申请证书，按照提示输入邮箱和域名就完成了</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./letsencrypt-auto certonly --server https://acme-v01.api.letsencrypt.org/directory --agree-dev-preview</div></pre></td></tr></table></figure></p>
@@ -100,10 +100,11 @@
 <p><strong>4.把证书全部复制到strongswan一键安装脚本目录</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">cp chain.pem /root/ca.cert.pem # 包括根证书的链证书</div><div class="line">cp cert.pem /root/server.cert.pem # 服务器证书</div><div class="line">cp privkey.pem /root/server.pem # 服务器私钥</div></pre></td></tr></table></figure></p>
 <p><strong>5.然后就是安装Strongswan了，注意两点：</strong><br>1) 证书选择自己导入证书，否则脚本会自己生成自签发证书；<br><img src="http://vinqon.com/fms2/ROOT/image/strongswan.jpg" width="600px"></p>
 <p>2) 安装完之后，需要去/usr/local/etc/ipsec.conf修改leftid，leftid需要和证书的域名保持一致，域名可以不指向本机IP，就是说一个有效证书可以用在多个Strongswan VPN的服务器上；<br><img src="http://vinqon.com/fms2/ROOT/image/leftid.jpg" width="400px"></p>
-<p><strong>6. 启动Strongswan之后，就用手机连接了。下面是系统VPN设置页面的配置Demo，通过程序连接基本同理；</strong><br><img src="http://vinqon.com/fms2/ROOT/image/iphoneconfig2.jpg" width="320px"></p>
-<h2 id="方案二-服务器使用PSK密钥验证"><a href="#方案二-服务器使用PSK密钥验证" class="headerlink" title="方案二/服务器使用PSK密钥验证"></a>方案二/服务器使用PSK密钥验证</h2><p>这个办法其实很简单，但是用了我蛮多时间去摸索这些配置信息的。下面是服务器的配置方法，打开<code>/usr/local/etc/ipsec.conf</code>，然后加上下面这段配置：</p>
+<p><strong>6. 启动Strongswan之后，就用手机连接了。下面是系统VPN设置页面的配置Demo；</strong></p>
+<p><img src="http://vinqon.com/fms2/ROOT/image/iphoneconfig2.jpg" width="320px"></p>
+<h2 id="方案二-服务器使用PSK密钥验证"><a href="#方案二-服务器使用PSK密钥验证" class="headerlink" title="方案二/服务器使用PSK密钥验证"></a>方案二/服务器使用PSK密钥验证</h2><p>这个办法其实很简单，但是用了我蛮多时间去摸索这些配置信息的。在服务器中打开<code>/usr/local/etc/ipsec.conf</code>，然后加上下面这段配置：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">conn ios_ikev2_xauth_psk</div><div class="line">        keyexchange=ikev2</div><div class="line">        leftid=okvpn</div><div class="line">        left=%defaultroute</div><div class="line">        leftauth=psk</div><div class="line">        leftsubnet=0.0.0.0/0</div><div class="line">        right=%any</div><div class="line">        rightauth=eap-mschapv2</div><div class="line">        rightsourceip=10.31.2.0/24</div><div class="line">        rightsendcert=never</div><div class="line">        eap_identity=%any</div><div class="line">        dpdaction=clear</div><div class="line">        fragmentation=yes</div><div class="line">        auto=add</div></pre></td></tr></table></figure>
-<p>然后，客户端的配置和IPSec的方法基本一直，但是要主要改两个地方：</p>
+<p>然后，客户端的配置和IPSec的方法基本一致，但是要主要改两个地方：</p>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> p = <span class="type">NEVPNProtocolIPSec</span>()</div><div class="line"><span class="keyword">if</span> vpnServer?.objectForKey(<span class="string">"method"</span>) <span class="keyword">as</span>! <span class="type">String</span>? == <span class="string">"ikev2"</span> &#123;</div><div class="line">	p = <span class="type">NEVPNProtocolIKEv2</span>()</div><div class="line">	p.remoteIdentifier = <span class="string">"okvpn"</span></div><div class="line">&#125;</div><div class="line">p.username = <span class="keyword">self</span>.username</div><div class="line">p.serverAddress = <span class="type">VPN_IP_ADDRESS</span></div><div class="line">p.passwordReference = keychain[attributes: <span class="string">"vpnpassword"</span>]!.persistentRef</div><div class="line">p.authenticationMethod = .<span class="type">SharedSecret</span></div><div class="line">p.sharedSecretReference = keychain[attributes: <span class="string">"sharedSecret"</span>]!.persistentRef</div><div class="line">p.useExtendedAuthentication = <span class="literal">true</span></div></pre></td></tr></table></figure>
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://wiki.strongswan.org/projects/strongswan/wiki/AppleIKEv2Profile" target="_blank" rel="external">IKEv2 Configuration Profile for Apple iOS 8 and newer</a><br><a href="https://linsir.org/post/Strongswan-not-import-certs-and-some-tips" target="_blank" rel="external">Strongswan IKEV2免导入证书配置及调试笔记</a><br><a href="https://zorro.im/strongswan-ikev2-for-ios-without-certificate/" target="_blank" rel="external">用 strongSwan 搭建免证书的 IKEv2 VPN</a><br><a href="https://shanbin.name/lets-encrypt-ssl-certificates-for-free/" target="_blank" rel="external">申请免费的Let’s Encrypt SSL证书</a></p>
 
@@ -129,7 +130,7 @@
 
     <span class="post-tags">
       <i class="icon-tags"></i>
-        <a href="/tags/ikev2/">ikev2</a><a href="/tags/vpn/">vpn</a><a href="/tags/strongwans/">strongwans</a>
+        <a href="/tags/ikev2/">ikev2</a><a href="/tags/vpn/">vpn</a><a href="/tags/strongwans/">strongwans</a><a href="/tags/ios/">ios</a>
     </span>
     
 
