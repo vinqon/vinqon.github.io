@@ -593,6 +593,11 @@ article .featured-media img {
   height: auto;
   margin: 1rem auto;
 }
+article .article-excerpt .article-more-link,
+article .article-content .article-more-link,
+article .featured-media .article-more-link {
+  text-align: right;
+}
 article .article-footer .pull-left {
   float: left;
 }
@@ -647,6 +652,11 @@ article code {
 article p {
   margin: 2rem 0;
   line-height: 1.8;
+}
+article ol,
+article ul {
+  margin: 2rem 0;
+  line-height: 1.5;
 }
 article .video-container {
   position: relative;
