@@ -132,7 +132,7 @@ article code {
   margin-left: 2px;
   margin-right: 2px;
   color: #c7254e;
-  white-space: normal;
+  white-space: pre;
   border-radius: 0;
 }
 article p {
