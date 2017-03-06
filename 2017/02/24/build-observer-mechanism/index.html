@@ -151,7 +151,8 @@ var _hmt = _hmt || [];
 
 @implementation MyNotificationCenter
 
-+ (id) defaultCenter {
++ (id) defaultCenter 
+{
     static dispatch_once_t onceToken;
     static MyNotificationCenter *_center;
     dispatch_once(&amp;onceToken, ^{
@@ -160,14 +161,16 @@ var _hmt = _hmt || [];
     return _center;
 }
 
-- (NSMutableDictionary *)observerDict {
+- (NSMutableDictionary *)observerDict 
+{
     if (!_observerDict) {
         _observerDict = [NSMutableDictionary dictionary];
     }
     return _observerDict;
 }
 
-- (NSMutableSet *)observersForName:(NSString *)notificationName {
+- (NSMutableSet *)observersForName:(NSString *)notificationName 
+{
     NSMutableSet *observers = [self.observerDict objectForKey:notificationName];
     if (!observers) {
         observers = [NSMutableSet set];
@@ -176,18 +179,21 @@ var _hmt = _hmt || [];
     return observers;
 }
 
-- (void)addObserver:(id)observer name:(NSString *)notificationName {
+- (void)addObserver:(id)observer name:(NSString *)notificationName 
+{
     [[self observersForName:notificationName] addObject:observer];
 }
 
-- (void)postNotification:(NSString *)notificationName {
+- (void)postNotification:(NSString *)notificationName 
+{
     NSMutableSet *observers = [self observersForName:notificationName];
     for (id&lt;MyNotificationDelegate&gt; observer in observers) {
         [observer receivedNotification:notificationName];
     }
 }
 
-- (void)removeObserver:(id&lt;MyNotificationDelegate&gt;)observer {
+- (void)removeObserver:(id&lt;MyNotificationDelegate&gt;)observer 
+{
     NSArray *allSets = [self.observerDict allValues];
     for (NSMutableSet *set in allSets) {
         [set removeObject:observer];
@@ -202,12 +208,14 @@ var _hmt = _hmt || [];
 <li>把observer的内存指针转换成void *，放在C数组里面；</li>
 </ol>
 <p>这两个办法理论虽然可行，但都略为粗暴；在Foundation库里面有一个NSValue类可以让我们比较优雅地解决这个问题：</p>
-<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName {
+<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName 
+{
     NSValue *boxedObserver = [NSValue valueWithNonretainedObject:observer];
     [[self observersForName:notificationName] addObject:boxedObserver];
 }
 
-- (void)postNotification:(NSString *)notificationName {
+- (void)postNotification:(NSString *)notificationName 
+{
     NSMutableSet *observers = [self observersForName:notificationName];
     for (NSValue *boxedObserver in observers) {
         id&lt;MyNotificationDelegate&gt; observer = [boxedObserver nonretainedObjectValue];
@@ -258,12 +266,14 @@ var _hmt = _hmt || [];
 @end
 </code></pre>
 <p>接着就是在MyNotificationCenter中把NSValue的封装换成MyObserver的封装：</p>
-<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName {
+<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName 
+{
     MyObserver *boxedObserver = [MyObserver observerWithObject:observer];
     [[self observersForName:notificationName] addObject:boxedObserver];
 }
 
-- (void)postNotification:(NSString *)notificationName {
+- (void)postNotification:(NSString *)notificationName 
+{
     NSMutableSet *observers = [self observersForName:notificationName];
     for (MyObserver *boxedObserver in observers) {
         id&lt;MyNotificationDelegate&gt; observer = boxedObserver.observer;
@@ -272,14 +282,16 @@ var _hmt = _hmt || [];
 }
 </code></pre>
 <p>类似的，还有一种代码更少的方式，就是用Block来封装。</p>
-<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName {
+<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName 
+{
     __weak id weakObserver = observer;
     [[self observersForName:notificationName] addObject:[^{
         return weakObserver;
     } copy]];
 }
 
-- (void)postNotification:(NSString *)notificationName {
+- (void)postNotification:(NSString *)notificationName 
+{
     NSMutableSet *observers = [self observersForName:notificationName];
     for (id (^boxedObserver)(void)  in observers) {
         id&lt;MyNotificationDelegate&gt; observer = boxedObserver();
@@ -298,7 +310,8 @@ var _hmt = _hmt || [];
 
 @implementation DeallocObserver
 
-- (void)dealloc {
+- (void)dealloc 
+{
     if (self.deallocBlock) {
         self.deallocBlock();
     }
@@ -307,7 +320,8 @@ var _hmt = _hmt || [];
 @end
 </code></pre>
 <p>然后在DeallocObserver实例的deallocBlock中加入清理observer的逻辑，再通过关联对象把它关联到观察者中，这样当observer释放了，它会自动清理它的关联对象，关联对象被释放时触发block的调用，把这个observer从MyNotificationCenter里清除掉；</p>
-<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName {
+<pre><code class="objective-c">- (void)addObserver:(id)observer name:(NSString *)notificationName 
+{
     NSValue *boxedObserver = [NSValue valueWithNonretainedObject:observer];
     DeallocObserver *deallocObserver = [[DeallocObserver alloc] init];
     deallocObserver.deallocBlock = ^{
