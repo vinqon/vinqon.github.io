@@ -234,12 +234,13 @@ end
 <ol>
 <li>Clone项目代码，下载和安装Pod依赖和内部最新SDK/Library依赖；</li>
 <li>根据当前分支做环境配置，譬如：测试环境使用Enterprise证书，线上环境使用Appstore证书等；</li>
-<li>更新版本号；</li>
-<li>编译项目工程；</li>
-<li>跑单元测试；</li>
+<li>更新Build Number；</li>
+<li>编译项目工程并打包；</li>
+<li>执行单元测试；</li>
 <li>根据当前分支，上传IPA包到Hocky或者iTunesConnect；</li>
 <li>发送成功或者失败的通知到邮件和Slack；</li>
 </ol>
+<p>以上大部分操作都可以通过Fastlane和相关套件很简单地完成，社区的方案基本都大同小异，这里就不详细介绍了。</p>
 <h3 id="5-测试分发"><a href="#5-测试分发" class="headerlink" title="5. 测试分发"></a>5. 测试分发</h3><p>针对测试和上线环境的测试分发，我们分别使用了Hocky和Testflight来作为分发平台。</p>
 <p>Hocky其实就是类似国内的fir.im, 蒲公英这些平台，通过企业证书签名，可以让内部测试人员方便地下载安装测试；至于线上环境，原本我们同样使用Hocky，只是换了AdHoc证书来进行的线上环境测试的。但是，后面我们发现Testflight是一个更好的方案，原因有：</p>
 <ol>
