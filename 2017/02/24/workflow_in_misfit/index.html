@@ -256,7 +256,7 @@ end
 <li><code>*skip-cr</code><br><em>跳过强制Code Review</em></li>
 </ul>
 <h3 id="7-Weely-Build"><a href="#7-Weely-Build" class="headerlink" title="7. Weely Build"></a>7. Weely Build</h3><p>这算是一个题外话了。因为我每周都需要输出一个Weekly Build，具体工作就是通过邮件发出包括最新安装包的下载链接，以及所有更新日志。</p>
-<p>有一天我自动化强迫症又发作，于是打算把这块工作也让程序完成了。上面说到我们搭建了的服务系统，可以接收Git Hook的通知和调用JIRA API。于是基于它们，我写了另外一个服务用于收集Git日志和任务信息，自动生成了了最近N天的更新日志，大概效果是这样的：</p>
+<p>有天我自动化强迫症又发作，于是把这块工作也让程序完成了。上面说到我们搭建了的服务系统，可以接收Git Hook的通知和调用JIRA API。于是基于它们，我写了另外一个服务用于收集Git日志和任务信息，自动生成了了最近N天的更新日志，大概效果是这样的：</p>
 <p><img src="https://ww3.sinaimg.cn/large/006tNbRwgy1fdcjwerl28j31ba17w762.jpg" style="width:851px"></p>
 
       
