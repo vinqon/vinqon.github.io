@@ -160,7 +160,7 @@ cp privkey.pem /root/server.pem # 服务器私钥
 <h2 id="方案二-服务器使用PSK密钥验证"><a href="#方案二-服务器使用PSK密钥验证" class="headerlink" title="方案二/服务器使用PSK密钥验证"></a>方案二/服务器使用PSK密钥验证</h2><p>这个办法其实很简单，但是用了我蛮多时间去摸索这些配置信息的。在服务器中打开<code>/usr/local/etc/ipsec.conf</code>，然后加上下面这段配置：</p>
 <pre><code>conn ios_ikev2_xauth_psk
         keyexchange=ikev2
-        leftid=okV_P_N
+        leftid=okVPN
         left=%defaultroute
         leftauth=psk
         leftsubnet=0.0.0.0/0
@@ -173,14 +173,14 @@ cp privkey.pem /root/server.pem # 服务器私钥
         fragmentation=yes
         auto=add
 </code></pre><p>然后，客户端的配置和IPSec的方法基本一致，但是要主要改两个地方：</p>
-<pre><code class="swift">var p = NEV_P_NProtocolIPSec()
-if V_P_NServer?.objectForKey(&quot;method&quot;) as! String? == &quot;ikev2&quot; {
-    p = NEV_P_NProtocolIKEv2()
-    p.remoteIdentifier = &quot;okV_P_N&quot;
+<pre><code class="swift">var p = NEVPNProtocolIPSec()
+if VPNServer?.objectForKey(&quot;method&quot;) as! String? == &quot;ikev2&quot; {
+    p = NEVPNProtocolIKEv2()
+    p.remoteIdentifier = &quot;okVPN&quot;
 }
 p.username = self.username
-p.serverAddress = V_P_N_IP_ADDRESS
-p.passwordReference = keychain[attributes: &quot;V_P_Npassword&quot;]!.persistentRef
+p.serverAddress = VPN_IP_ADDRESS
+p.passwordReference = keychain[attributes: &quot;VPNpassword&quot;]!.persistentRef
 p.authenticationMethod = .SharedSecret
 p.sharedSecretReference = keychain[attributes: &quot;sharedSecret&quot;]!.persistentRef
 p.useExtendedAuthentication = true
