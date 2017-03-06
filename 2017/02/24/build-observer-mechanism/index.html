@@ -334,6 +334,7 @@ var _hmt = _hmt || [];
     [[self observersForName:notificationName] addObject:[NSValue valueWithNonretainedObject:observer]];
 }
 </code></pre>
+<p>目前来看，这个办法应该是最优的。不过，如果了解到Associated Object的运行时实现原理的话，你会发现这个方法和最开始提到的『用Method Swizzling来Hook住dealloc方法』本质基本是一样的。只是这个看起来会更优雅一些。</p>
 <p>以上，是由一个观察者模型的引申的一些思考。不知道是否可能有其他更好的方案，欢迎讨论指教。</p>
 
       
