@@ -225,9 +225,10 @@ end
 <p>于是，我们后面转向了Pre-Commit Code Review，即提交前预审查的方案，即未审查的代码不能Push代码到远程代码服务器。这种机制让情况稍微好了一点，但这也出现很多问题：</p>
 <ol>
 <li>步骤繁琐；预审查方案需要依赖一个命令行工具<a href="https://www.phacility.com/phabricator/arcanist/" target="_blank" rel="external">Arcanist</a>，每次提交都要通过命令行输入不少信息。</li>
-<li>非强制性；『Commit前必须提交Code Review』和『Code Review通过了才能Push』这两个要求并无强制约束机制，成员完成可以不遵循；</li>
+<li>非强制性；『Commit前必须提交Code Review』和『Code Review通过了才能Push』这两个要求并无强制约束机制，成员常常不遵循；</li>
 </ol>
 <p>对于问题1，我们的解决方案也是通过Git Hook的本地脚本来解决，我们在commit代码之后，.git/hook目录下的post-commit脚本会被触发，我们把所有提交的命令行操作全部写在这个脚本上，这样便完成了Code Review的自动提交。而问题2，我们用类似的办法解决，因为pre-push脚本可以阻止用户push代码，我们只要在pre-push脚本加上了这样一个约束策略：通过Phabricator的API查询该Commit是否已经通过审查来决定这个提交能否push到服务器。</p>
+<p>这样，我们便建立了这样一个理想的强制代码审查机制：一旦Commit代码，自动发起审查请求；只有审查完成，代码才能被Push到服务器。</p>
 <h3 id="4-持续集成"><a href="#4-持续集成" class="headerlink" title="4. 持续集成"></a>4. 持续集成</h3><p>在以前，持续集成一般只常见于服务器端开发，移动客户端（至少iOS）开发很少会做持续集成。而苹果的封闭性也确实让iOS的持续集成带来不少问题。现在越来越多工具、服务、平台的出现，使得持续集成的难度和成本也减低了不少，持续集成在社区也获得日益增多的关注。</p>
 <p>我认为，持续集成在项目流程中是很必要也是很重要的。因为它可以让我们保证项目工程的稳定性以及软件的持续可用，所以大大减低了项目的风险。我们的持续集成主要使用了Travis+Fastlane的技术栈。每一次代码提交，都会触发Travis运行脚本做这些事情：</p>
 <ol>
