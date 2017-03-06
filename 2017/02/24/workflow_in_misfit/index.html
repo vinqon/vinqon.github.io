@@ -1,0 +1,334 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>持续集成和自动化工作流的实践 | Feather</title>
+
+  
+  <meta name="author" content="Feather">
+  
+
+  
+  <meta name="description" content="Foreword一套良好的工作流方法，不仅可以提高团队的工作效率，还能保证代码和软件的质量以及项目风险。
+在Misfit，我们在代码版本管理，Code Review，持续集成，自动化测试，BDD和项目管理等方面做了很多实践。在中间过程踩了不少坑，但是很值得高兴的是，我们最后摸索出一套适合团队而且高效的工作流。这篇文章会介绍我们在这方面的一些实践和经验。
+Workflow本文会分几部分来介绍我们的Workflow，其实这里的每一部分都是独立了，但是我们通过一些工具和服务把所有的步骤无缝连接起来了。这些下面都会介绍到：
+
+需求管理
+版本管理
+代码审查
+持续集成
+分发测试
+流程控制
+
+1. 需求管理需求，是所有故事的开始。一般来说，我们的需求源可以分为有三大类：
+
+Feature：功能需求，这是由PM制定的主要需求源；
+Bug Fix：一般从QA团队、客服团队、内测人员反馈的待修复问题需求；
+Improvement：优化需求，包括外部提出的性能问题和开发内部制定的重构计划；
+
+这常常会用到一些需求管理平台来管理这些任务，譬如Redmine、JIRA之类的，值得一提的是，国内的Teambition也是不错的。我们使用了JIRA来管理需求任务，任务也会分为以上三类。另外，我们会要求，所有的代码修改都要在Commit Message上写上对应的任务标识，以便开发和测试人员存档，追踪和验证；
+这里提到的Commit Message，就是提交代码的说明。社区中有不少Commit Message的格式规范，我们根据主流的Angular 规范做了部分调整，制定了自己的格式规范。首先，从结构来看，Commit Message可以分为三部分：
+
+HEADERbreaking lineBODYbreaking lineFOOTER
+
+这三部分分别是HEADER，BODY，FOOTER，他们都由一行空行隔开。HEADER是必需的，一般写上这次提交的标识和概述；BODY和FOOTER则是可选的，但是也很鼓励开发人员在BODY上写上这次改动的原因和验证的办法；而FOOTER则负责通过一些『标记命令』实现一些流程的控制；举一个例子：">
+  
+
+  
+  
+  <meta name="keywords" content="ios,git,workflow">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="持续集成和自动化工作流的实践"/>
+
+  <meta property="og:site_name" content="Feather"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Feather" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    <!--prettify code-->
+  <link rel="stylesheet" href="/prettify/prettify.css" type="text/css">
+  <script src="/zepto.js" type="text/javascript"></script>
+  <script src="/prettify/prettify.js" type="text/javascript"></script>
+  <script type="text/javascript">
+  $(function(){
+      $('pre').addClass('prettyprint linenums').attr('style', 'overflow:auto;');
+      prettyPrint();
+    });
+  </script>
+  <style media="screen">
+  pre{
+      font-size: 14px;
+        /*word-break: break-all;*/
+        /*word-wrap: break-word;*/
+    }
+  </style>
+  <!--prettify code-->
+
+  <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f81ca1ed55355a989137215564033fe4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Feather</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">Home</a></li>
+      
+        <li><a href="/archives">Archives</a></li>
+      
+        <li><a href="/about-me">About</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>持续集成和自动化工作流的实践</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2017/02/24/workflow_in_misfit/" rel="bookmark">
+        <time class="entry-date published" datetime="2017-02-23T16:44:31.000Z">
+          2017-02-24
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="Foreword"><a href="#Foreword" class="headerlink" title="Foreword"></a>Foreword</h2><p>一套良好的工作流方法，不仅可以提高团队的工作效率，还能保证代码和软件的质量以及项目风险。</p>
+<p>在Misfit，我们在代码版本管理，Code Review，持续集成，自动化测试，BDD和项目管理等方面做了很多实践。在中间过程踩了不少坑，但是很值得高兴的是，我们最后摸索出一套适合团队而且高效的工作流。这篇文章会介绍我们在这方面的一些实践和经验。</p>
+<h2 id="Workflow"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow</h2><p>本文会分几部分来介绍我们的Workflow，其实这里的每一部分都是独立了，但是我们通过一些工具和服务把所有的步骤无缝连接起来了。这些下面都会介绍到：</p>
+<ol>
+<li>需求管理</li>
+<li>版本管理</li>
+<li>代码审查</li>
+<li>持续集成</li>
+<li>分发测试</li>
+<li>流程控制</li>
+</ol>
+<h3 id="1-需求管理"><a href="#1-需求管理" class="headerlink" title="1. 需求管理"></a>1. 需求管理</h3><p>需求，是所有故事的开始。<br>一般来说，我们的需求源可以分为有三大类：</p>
+<ol>
+<li>Feature：功能需求，这是由PM制定的主要需求源；</li>
+<li>Bug Fix：一般从QA团队、客服团队、内测人员反馈的待修复问题需求；</li>
+<li>Improvement：优化需求，包括外部提出的性能问题和开发内部制定的重构计划；</li>
+</ol>
+<p>这常常会用到一些需求管理平台来管理这些任务，譬如Redmine、JIRA之类的，值得一提的是，国内的Teambition也是不错的。<br>我们使用了JIRA来管理需求任务，任务也会分为以上三类。另外，我们会要求，所有的代码修改都要在Commit Message上写上对应的任务标识，以便开发和测试人员存档，追踪和验证；</p>
+<p>这里提到的Commit Message，就是提交代码的说明。社区中有不少Commit Message的格式规范，我们根据主流的<a href="http://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html" target="_blank" rel="external">Angular 规范</a>做了部分调整，制定了自己的格式规范。首先，从结构来看，Commit Message可以分为三部分：</p>
+<blockquote>
+<p>HEADER<br><em>breaking line</em><br>BODY<br><em>breaking line</em><br>FOOTER</p>
+</blockquote>
+<p>这三部分分别是HEADER，BODY，FOOTER，他们都由一行空行隔开。HEADER是必需的，一般写上这次提交的标识和概述；BODY和FOOTER则是可选的，但是也很鼓励开发人员在BODY上写上这次改动的原因和验证的办法；而FOOTER则负责通过一些『标记命令』实现一些流程的控制；举一个例子：</p>
+<a id="more"></a>
+<blockquote>
+<p>[MSF-1009] Fix the manual sleep crash</p>
+<p>Update the algorithm to 1.9.7.1 to fix the crash<br>This crash happen when user tag sleep and sync with some sleep data</p>
+<p><code>*close</code></p>
+</blockquote>
+<p>第一行的<code>MSF-1009</code>就是JIRA上的任务标记，接着后面的是改动概述；BODY里面是改动的详细描述和验证修复的方法；FOOTER的<code>*close</code>标记这表示已完成这个任务，可以更改状态为<code>Done</code>。</p>
+<p>而实践中发现，理想很丰满，现实很骨感，理所当然的，这里会出现很多问题：</p>
+<ol>
+<li>虽然定了Commit Message的格式规范，但是大家都没有严格遵守；</li>
+<li>为了方便，开发人员常常直接修改代码也没有创建需求任务；</li>
+<li>为了方便，开发人员常常完成任务没有及时更新状态；</li>
+<li>有时做一些很小的修改，我们还需要特地创建任务和更新状态，确实很麻烦；</li>
+</ol>
+<p>为了解决第一个问题，我们引入了<strong>Git Hook</strong>。一般说的Git Hook有两种，一种是位于本地(.git/hook目录下)的脚本，一种是服务器的Hook API。他们分别能在某些关键时间点触发脚本或者向特定URL发出请求；</p>
+<p>本地的hook脚本能在commit和push前后触发执行，操作前执行的脚本甚至能阻止操作（返回exit 1）。下面脚本就是用来检查Commit Message的格式是否正确，如果格式不符合规范，则无法commit代码；</p>
+<pre><code class="ruby">#!/usr/bin/env ruby
+message_file = ARGV[0]
+message = File.read(message_file)
+
+first_line = message.split(/\n/)[0]
+result = first_line.match(/\[(.*?)\](.*?)$/)
+
+if !result
+  puts &quot;The commit message pattern should follow &#39;[Type] commit message&#39;&quot;
+  exit 1
+end
+
+commit_type = result[1]
+commit_message = result[2]
+
+if !(commit_type.match(/^GIT/) || commit_type.match(/^IMP/) || commit_type.match(/^FIX/) || commit_type.match(/^MSF-/i))
+  puts &quot;The type should start with GIT/FIX/IMP/MSF&quot;
+  exit 1
+end
+
+if commit_message.length &lt; 5
+  puts &quot;The commit message should be more than 5 characters&quot;
+  exit 1
+end
+</code></pre>
+<p>这样，问题1，2都解决了，开发人员必须先创建任务，获得任务标记，按照格式写在Commit Message上才能成功commit代码。</p>
+<p>为什么要这么严格要求规范呢？一个为了是Git Log看起来整洁清晰，另外一个是，为了解决上面说的问题3和4『为了方便，开发人员常常完成任务没有及时更新状态』、『有时做一些很小的修改，我们还需要特地创建任务和更新状态，确实很麻烦』，现在有了结构化的信息，我们就能实现自动化的任务更新了。</p>
+<p>我们搭建了一个服务器系统，用于接收Git的Hook API通知。每当用户提交修改，服务器收到Hook API通知后，就会解析Commit Message，然后通过JIRA API向该任务添加Worklog，如果尾部标记了<code>*close</code>，那么就会把任务更新状态为<code>Done</code>。</p>
+<p>至于问题4，对于小改动，我们允许开发人员通过Commit Message来创建任务。正如在上面脚本可以看到的，除了JIRA的任务标识，三类任务标记也会放行：<code>GIT</code>、<code>IMP</code>、<code>FIX</code>。我们可以通过<code>IMP</code>标记创建一个Improvement类的JIRA任务，通过<code>FIX</code>标记来创建一个Bug Fix类的JIRA任务，而<code>GIT</code>标记不会创建任务，它主要用于处理Merge等Git操作情况下的无任务Commit。下面例子创建了一个Bug Fix任务并把状态更新为完成：</p>
+<blockquote>
+<p>[FIX] Fix the manual sleep crash</p>
+<p>Update the algorithm to 1.9.7.1 to fix the crash<br>This crash happen when user tag sleep and sync with some sleep data</p>
+<p><code>*close</code></p>
+</blockquote>
+<p>基本上，关于需求管理的约束机制和自动化流程大概就是这些。</p>
+<h3 id="2-版本管理"><a href="#2-版本管理" class="headerlink" title="2. 版本管理"></a>2. 版本管理</h3><p>我们使用<a href="https://www.atlassian.com/git/tutorials/comparing-workflows" target="_blank" rel="external">Git Flow</a>来进行版本管理控制，它相对于<a href="https://guides.github.com/introduction/flow/" target="_blank" rel="external">GitHub Flow</a>更适合在产品开发中快速迭代，这种代码管理模式应该已经广泛使用了，网上有很多相关资料，具体流程步骤这里就不细说了。<br>另外，我们鼓励使用Git客户端SourceTree，它集成了Git Flow的一些基本操作。如果严格遵循Git Flow的流程进行版本管理控制，那么我们只用管开始和结束一个Feature/Release/Hotfix，基本上是不用手动merge分支的。</p>
+<p><img src="https://ww4.sinaimg.cn/large/006tNbRwgy1fdceclzy7vj30ce0di3zd.jpg" style="width:223px"></p>
+<p>除了严格遵循Git Flow流程外，我们在Git操作上也有一些约定规范，譬如尽量用Rebase代替Merge，避免引入多余的Merge等。</p>
+<h3 id="3-代码审查"><a href="#3-代码审查" class="headerlink" title="3. 代码审查"></a>3. 代码审查</h3><p>说到Code Review，我们也算经过很多努力才落实下来的一步流程。落实Code Review不仅可以保证项目的代码质量，更重要的是，可以让项目成员间熟悉各自的模块，互相学习和监督。</p>
+<p>我们搭建了一个基于<a href="https://www.phacility.com/phabricator/" target="_blank" rel="external">Phabricator</a>的平台系统来进行Code Review，Phabricator原本是Facebook内部的Code Review工具。后来它的核心工程师Evan Priestley离开Facebook并成立Phacility公司继续这个产品的开发。</p>
+<p>Phabricator支持很多功能，其中我们比较常用的有两个：</p>
+<ol>
+<li>Pre-Commit Code Review，即代码提交前预审查，先提交审查，审查过了再提交代码，避免提交未审核的代码到Repo；</li>
+<li>Post-Commit Auditing，即代码提交后审查，先提交代码，系统会发邮件给其他项目成员请求审查；</li>
+</ol>
+<p>一开始的时候，我们执行Post-Commit Aduitting，每次代码提交都会触发系统都会生成一个审查请求发送到项目组，项目成员审查后可以提交comment发表疑问或者建议，并且可以选择是否通过审查，这里有官方的一个<a href="https://secure.phabricator.com/D13641" target="_blank" rel="external">Demo</a>。但是最后，我们发现这些审查请求邮件常常会被无视，然后Code Review还是没有执行下来。</p>
+<p>于是，我们后面转向了Pre-Commit Code Review，即提交前预审查的方案，即未审查的代码不能Push代码到远程代码服务器。这种机制让情况稍微好了一点，但这也出现很多问题：</p>
+<ol>
+<li>步骤繁琐；预审查方案需要依赖一个命令行工具<a href="https://www.phacility.com/phabricator/arcanist/" target="_blank" rel="external">Arcanist</a>，每次提交都要通过命令行输入不少信息。</li>
+<li>非强制性；『Commit前必须提交Code Review』和『Code Review通过了才能Push』这两个要求并无强制约束机制，成员完成可以不遵循；</li>
+</ol>
+<p>对于问题1，我们的解决方案也是通过Git Hook的本地脚本来解决，我们在commit代码之后，.git/hook目录下的post-commit脚本会被触发，我们把所有提交的命令行操作全部写在这个脚本上，这样便完成了Code Review的自动提交。而问题2，我们用类似的办法解决，因为pre-push脚本可以阻止用户push代码，我们只要在pre-push脚本加上了这样一个约束策略：通过Phabricator的API查询该Commit是否已经通过审查来决定这个提交能否push到服务器。</p>
+<h3 id="4-持续集成"><a href="#4-持续集成" class="headerlink" title="4. 持续集成"></a>4. 持续集成</h3><p>在以前，持续集成一般只常见于服务器端开发，移动客户端（至少iOS）开发很少会做持续集成。而苹果的封闭性也确实让iOS的持续集成带来不少问题。现在越来越多工具、服务、平台的出现，使得持续集成的难度和成本也减低了不少，持续集成在社区也获得日益增多的关注。</p>
+<p>我认为，持续集成在项目流程中是很必要也是很重要的。因为它可以让我们保证项目工程的稳定性以及软件的持续可用，所以大大减低了项目的风险。我们的持续集成主要使用了Travis+Fastlane的技术栈。每一次代码提交，都会触发Travis运行脚本做这些事情：</p>
+<ol>
+<li>Clone项目代码，下载和安装Pod依赖和内部最新SDK/Library依赖；</li>
+<li>根据当前分支做环境配置，譬如：测试环境使用Enterprise证书，线上环境使用Appstore证书等；</li>
+<li>更新版本号；</li>
+<li>编译项目工程；</li>
+<li>跑单元测试；</li>
+<li>根据当前分支，上传IPA包到Hocky或者iTunesConnect；</li>
+<li>发送成功或者失败的通知到邮件和Slack；</li>
+</ol>
+<h3 id="5-测试分发"><a href="#5-测试分发" class="headerlink" title="5. 测试分发"></a>5. 测试分发</h3><p>针对测试和上线环境的测试分发，我们分别使用了Hocky和Testflight来作为分发平台。</p>
+<p>Hocky其实就是类似国内的fir.im, 蒲公英这些平台，通过企业证书签名，可以让内部测试人员方便地下载安装测试；至于线上环境，原本我们同样使用Hocky，只是换了AdHoc证书来进行的线上环境测试的。但是，后面我们发现Testflight是一个更好的方案，原因有：</p>
+<ol>
+<li>同一个包，可以同时做Testflight测试和提交AppStore，保证了包一致性。</li>
+<li>Testflight测试流程简单，不受开发者平台上注册的测试设备数目影响；</li>
+<li>上传时会触发iTunesConnect对IPA包进行扫描以及plist/entitlement等配置进行检查，可以提前暴露问题，减低发包风险；</li>
+</ol>
+<h3 id="6-流程控制"><a href="#6-流程控制" class="headerlink" title="6. 流程控制"></a>6. 流程控制</h3><p>关于Commit Message，上面已经介绍了，因为信息的结构化，让我们实现了需求管理的自动化。事实上，它还兼备了自动化流程控制的作用，在FOOTER我们可以通过添加下面『命令标识』来控制跳过某些流程：</p>
+<ul>
+<li><code>*skip-jira</code><br><em>跳过所有JIRA相关的自动化操作，包括：创建任务，更新Worklog，更新状态</em></li>
+<li><code>*close</code><br><em>更新任务状态为已完成</em></li>
+<li><code>*skip-ci</code><br><em>跳过持续集成</em></li>
+<li><code>*skip-cr</code><br><em>跳过强制Code Review</em></li>
+</ul>
+<h3 id="7-Weely-Build"><a href="#7-Weely-Build" class="headerlink" title="7. Weely Build"></a>7. Weely Build</h3><p>这算是一个题外话了。因为我每周都需要输出一个Weekly Build，具体工作就是通过邮件发出包括最新安装包的下载链接，以及所有更新日志。</p>
+<p>有一天我自动化强迫症又发作，于是打算把这块工作也让程序完成了。上面说到我们搭建了的服务系统，可以接收Git Hook的通知和调用JIRA API。于是基于它们，我写了另外一个服务用于收集Git日志和任务信息，自动生成了了最近N天的更新日志，大概效果是这样的：</p>
+<p><img src="https://ww3.sinaimg.cn/large/006tNbRwgy1fdcjwerl28j31ba17w762.jpg" style="width:851px"></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+      
+
+    <span class="post-categories">
+      <i class="icon-categories"></i>
+        <a href="/categories/Tech/">Tech</a>
+    </span>
+    
+
+    
+    
+
+    <span class="post-tags">
+      <i class="icon-tags"></i>
+        <a href="/tags/ios/">ios</a><a href="/tags/git/">git</a><a href="/tags/workflow/">workflow</a>
+    </span>
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+	<div id="comment">
+		
+	<!-- 多说评论框 start -->
+	 <div class="ds-thread" data-thread-key="/2017/02/24/workflow_in_misfit/" data-title="持续集成和自动化工作流的实践" data-url="http://blog.vinqon.com/2017/02/24/workflow_in_misfit/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"vinqon"};
+	  (function() {
+	    var ds = document.createElement('script');
+	    ds.type = 'text/javascript';ds.async = true;
+	    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+	    ds.charset = 'UTF-8';
+	    (document.getElementsByTagName('head')[0]
+	     || document.getElementsByTagName('body')[0]).appendChild(ds);
+	  })();
+	  </script>
+	<!-- 多说公共JS代码 end -->
+
+	</div>
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2017 Feather
+    
+  </p>
+</footer>
+
+    
+  </div>
+</div>
+</body>
+</html>

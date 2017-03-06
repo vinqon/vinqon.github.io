@@ -22,9 +22,7 @@
 - (void) addObserver:(id&amp;lt;MyNotificationDelegate&amp;gt;)observer name:(NSString *)notificationName;
 - (void) removeObserver:(id&amp;lt;MyNotificationDelegate&amp;gt;)observer;
 - (void) postNotification:(NSString *)notificationName;
-@end
-
-然后里面的实现也是可以很简单，把通知名称和装有观察者对象的集合作为键值对放在字典中，60行的代码：">
+@end">
   
 
   
@@ -143,8 +141,8 @@ var _hmt = _hmt || [];
 - (void) postNotification:(NSString *)notificationName;
 @end
 </code></pre>
-<p>然后里面的实现也是可以很简单，把通知名称和装有观察者对象的集合作为键值对放在字典中，60行的代码：</p>
 <a id="more"></a>
+<p>然后里面的实现也是可以很简单，把通知名称和装有观察者对象的集合作为键值对放在字典中，60行的代码：</p>
 <pre><code class="objective-c">@interface MyNotificationCenter ()
 
 @property (nonatomic, strong) NSMutableDictionary *observerDict;
@@ -157,7 +155,7 @@ var _hmt = _hmt || [];
     static dispatch_once_t onceToken;
     static MyNotificationCenter *_center;
     dispatch_once(&amp;onceToken, ^{
-        _center = [[MyNotificationCenter alloc] init]; 
+        _center = [[MyNotificationCenter alloc] init];
     });
     return _center;
 }

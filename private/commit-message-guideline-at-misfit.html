@@ -1,0 +1,63 @@
+<h2 id="Foreword"><a href="#Foreword" class="headerlink" title="Foreword"></a>Foreword</h2><p>在Misfit，我们在代码管理，Code Review，持续集成，自动化测试，BDD和项目管理等方面做了很多实践。在中间过程其实很多尝试也并非一直很顺利，但是很值得高兴的是，我们最后摸索出一套适合团队而且高效的工作流，这过程有很多宝贵的经验值得记录下来。</p>
+<p>关于这方面的实践和思考，后面我会写几篇文章进行介绍，先立Flag后面再填坑。</p>
+<ol>
+<li>Git Flow &amp; Commit Management</li>
+<li>Force Code Review Flow</li>
+<li>CI with Travis &amp; Testflight</li>
+<li>Testing &amp; Automation</li>
+</ol>
+<p>这里是第一篇，主要介绍我们在代码管理上面的一些实践。主要有两方面，一个是Git Flow，另外一个是Commit Message的管理。</p>
+<p>关于Git Flow，应该很多人都很熟悉，它相对于Github Flow更适合在产品开发中快速迭代，这种代码管理模式应该已经广泛使用了，就不细说了。而另外一个代码管理的实践是，Commit Message的管理，我们通过Commit Message的规范和Git Hook的解析，实现了代码审核的提交，持续集成和项目任务状态的更新等等的自动化管理。</p>
+<p>下面是我之前写的一篇Commit Message编写规范的文档，主要介绍了规范和一些原理，先直接先放上来，后面找时候再翻译一下。</p>
+<p>This guideline will instruct you how you should compose your commit message before you submit your change to the repo. The rules of the commit message are very simple and strict. Thanks to Git Hook, it could help you examine your commit message, if it’s not qualified, you will fail to submit your change.</p>
+<p>A good commit message can not only help us better manage the code and do better version control in git, but also help the QA and other project members to understand your change and we can save much time on communication.</p>
+<a id="more"></a>
+<h2 id="The-components-of-the-commit-message"><a href="#The-components-of-the-commit-message" class="headerlink" title="The components of the commit message"></a>The components of the commit message</h2><p>First, there is one thing we need to make sure you know is the commit message is composed of head, body and foot. Each of them is separated by breaking line.</p>
+<blockquote>
+<p>HEAD<br><em>breaking line</em><br>BODY<br><em>breaking line</em><br>FOOT</p>
+</blockquote>
+<p>In general, we are used to omit the body and foot. In our repo, you are encouraged to describe your change in body section as detailed as possible.<br>Let’s check an example.</p>
+<p><strong>Example 1</strong></p>
+<blockquote>
+<p>[MSF-1009] Fix the manual sleep crash</p>
+<p>Update the algorithm to 1.9.7.1 to fix the crash<br>This crash happen when user tag sleep and sync with some sleep data</p>
+<p><code>*close</code></p>
+</blockquote>
+<h4 id="HEAD"><a href="#HEAD" class="headerlink" title="HEAD"></a>HEAD</h4><p>In our repo, HEAD consists with the TAG and summary. In most of the case, TAG is the key of the JIRA issue. Every commit is supposed to be tracked by a JIRA ticket. If there is no JIRA ticket for you commit, go create one! When creating the ticket, please pay attention on the issue type:</p>
+<ul>
+<li><p>Feature<br><em>Major product feature, like supporting new service or new hardware.</em></p>
+</li>
+<li><p>Improvement<br><em>Refactor, performance enhancement or framework update or other improvements.</em></p>
+</li>
+<li><p>Bug<br><em>Bugs from QA or feedback or Zendesk.</em></p>
+</li>
+<li><p>Task<br><em>Task is used to track non-code task, like writing the document, study the RAC. Commit message should not point to the issue of this type.</em></p>
+</li>
+</ul>
+<p>Sometimes, we need to do some small change to fix bug. It’s very inconvenient since you have to launch your browser, open JIRA website, go to your project page, fill the form and after that you get an issue key. To make it more efficiently, Now, it can be done automatically by your commit message.</p>
+<p><strong>Example 2</strong></p>
+<blockquote>
+<p>[FIX] Fix the manual sleep crash</p>
+<p>Update the algorithm to 1.9.7.1 to fix the crash<br>This crash happen when user tag sleep and sync with some sleep data</p>
+<p><code>*close</code></p>
+</blockquote>
+<p>As you can see above, if you submit a commit message like this, a JIRA ticket will be automatically created. The keywords inside the brackets can be either <code>FIX</code> or <code>IMP</code> which means bug fix or improvement. Do you notice that we don’t have a keywords for feature type? That’s because we don’t think the commit of feature type is the ‘small change’, go create a JIRA ticket!</p>
+<p>Besides, there are some cases like, we do some change on project configuration or travis script or other github stuffs. In these cases, you don’t need to create JIRA ticket for these kinds of commit, we can just add <code>*skip-jira</code> in the foot section, it would skip the JIRA automatic process. We will talk more about this later.</p>
+<p>In term of the git merge, we have a special keywords <code>GIT</code> for you.</p>
+<h4 id="BODY"><a href="#BODY" class="headerlink" title="BODY"></a>BODY</h4><p>In the body section, you should describe why you do this change and what you have done. It would be great if you can also describe how to verify this change for QA.</p>
+<p>What you have written in the commit message will be synchronized to JIRA as a worklog for the reference of QA and other project members. Just like creating JIRA ticket, updating comment in JIRA is also can be skipped by add <code>*skip-jira</code> in the foot section.</p>
+<p>Of course, this section is optional.</p>
+<h4 id="FOOT"><a href="#FOOT" class="headerlink" title="FOOT"></a>FOOT</h4><p>You can add some tag in the foot section to change some process. The follows are the supported tags:</p>
+<ul>
+<li><p><code>*skip-jira</code><br><em>skip the jira process, including update comment, create JIRA</em></p>
+</li>
+<li><p><code>*close</code><br><em>mark the ticket as resolved</em></p>
+</li>
+<li><p><code>*skip-ci</code><br><em>skip travis build </em></p>
+</li>
+<li><p><code>*skip-cr</code><br><em>skip the code review validation (not support yet)</em></p>
+</li>
+</ul>
+<p>These four tags are very easy to remember and please keep in mind that all of them are start with the <code>*</code> sign.</p>
+<h2 id="Git-Hook"><a href="#Git-Hook" class="headerlink" title="Git Hook"></a>Git Hook</h2><p>Git hook is the scripts that can be triggered in certain time. We have our customize git hook script to help you verify your commit message.</p>
+<p>The hook script will be copied to the correct local path automatically after you start building the project, you don’t need to do anything for that. You will see the error message if you submit an unqualified commit message.</p>
