@@ -18,7 +18,7 @@ Workflow本文会分几部分来介绍我们的Workflow，其实这里的每一�
 版本管理
 代码审查
 持续集成
-分发测试
+交付分发
 流程控制
 
 1. 需求管理需求，是所有故事的开始。一般来说，我们的需求源可以分为有三大类：
@@ -32,7 +32,7 @@ Improvement：优化需求，包括外部提出的性能问题和开发内部制
 
 HEADERbreaking lineBODYbreaking lineFOOTER
 
-这三部分分别是HEADER，BODY，FOOTER，他们都由一行空行隔开。HEADER是必需的，一般写上这次提交的标识和概述；BODY和FOOTER则是可选的，但是也很鼓励开发人员在BODY上写上这次改动的原因和验证的办法；而FOOTER则负责通过一些『标记命令』实现一些流程的控制；举一个例子：">
+这三部分分别是HEADER，BODY，FOOTER，他们都由一行空行隔开。HEADER是必需的，一般写上这次提交的标识和概述；BODY和FOOTER则是可选的，但是也我会鼓励开发人员在BODY上写上这次改动的原因和验证的办法；而FOOTER则负责通过一些『标记命令』实现一些流程的控制；举一个例子：">
   
 
   
@@ -145,7 +145,7 @@ var _hmt = _hmt || [];
 <li>版本管理</li>
 <li>代码审查</li>
 <li>持续集成</li>
-<li>分发测试</li>
+<li>交付分发</li>
 <li>流程控制</li>
 </ol>
 <h3 id="1-需求管理"><a href="#1-需求管理" class="headerlink" title="1. 需求管理"></a>1. 需求管理</h3><p>需求，是所有故事的开始。<br>一般来说，我们的需求源可以分为有三大类：</p>
@@ -159,7 +159,7 @@ var _hmt = _hmt || [];
 <blockquote>
 <p>HEADER<br><em>breaking line</em><br>BODY<br><em>breaking line</em><br>FOOTER</p>
 </blockquote>
-<p>这三部分分别是HEADER，BODY，FOOTER，他们都由一行空行隔开。HEADER是必需的，一般写上这次提交的标识和概述；BODY和FOOTER则是可选的，但是也很鼓励开发人员在BODY上写上这次改动的原因和验证的办法；而FOOTER则负责通过一些『标记命令』实现一些流程的控制；举一个例子：</p>
+<p>这三部分分别是HEADER，BODY，FOOTER，他们都由一行空行隔开。HEADER是必需的，一般写上这次提交的标识和概述；BODY和FOOTER则是可选的，但是也我会鼓励开发人员在BODY上写上这次改动的原因和验证的办法；而FOOTER则负责通过一些『标记命令』实现一些流程的控制；举一个例子：</p>
 <a id="more"></a>
 <blockquote>
 <p>[MSF-1009] Fix the manual sleep crash</p>
@@ -169,13 +169,13 @@ var _hmt = _hmt || [];
 <p>第一行的<code>MSF-1009</code>就是JIRA上的任务标记，接着后面的是改动概述；BODY里面是改动的详细描述和验证修复的方法；FOOTER的<code>*close</code>标记这表示已完成这个任务，可以更改状态为<code>Done</code>。</p>
 <p>而实践中发现，理想很丰满，现实很骨感，理所当然的，这里会出现很多问题：</p>
 <ol>
-<li>虽然定了Commit Message的格式规范，但是大家都没有严格遵守；</li>
-<li>为了方便，开发人员常常直接修改代码也没有创建需求任务；</li>
-<li>为了方便，开发人员常常完成任务没有及时更新状态；</li>
-<li>有时做一些很小的修改，我们还需要特地创建任务和更新状态，确实很麻烦；</li>
+<li>开发人员常常没有创建需求任务，就直接修改并提交代码；</li>
+<li>开发人员常常没有严格遵守Commit Message的格式规范；</li>
+<li>开发人员常常在完成任务后，没有及时更新需求任务状态；</li>
+<li>有时做一些很小的修改，开发人员还需要特地创建任务和更新状态，确实很麻烦；</li>
 </ol>
-<p>为了解决第一个问题，我们引入了<strong>Git Hook</strong>。一般说的Git Hook有两种，一种是位于本地(.git/hook目录下)的脚本，一种是服务器的Hook API。他们分别能在某些关键时间点触发脚本或者向特定URL发出请求；</p>
-<p>本地的hook脚本能在commit和push前后触发执行，操作前执行的脚本甚至能阻止操作（返回exit 1）。下面脚本就是用来检查Commit Message的格式是否正确，如果格式不符合规范，则无法commit代码；</p>
+<p>为了解决第一个问题，我们引入了<strong>Git Hook</strong>。一般说的Git Hook有两种，一种是位于本地(.git/hook目录下)的脚本，一种是服务器的Hook API。在某些关键时间点前者能触发相关脚本，而后者会向特定URL发出HTTP请求；</p>
+<p>本地的hook脚本能在commit和push前后触发执行，操作前执行的脚本甚至能阻止操作（返回exit 1）。下面脚本就是用来检查Commit Message的格式是否符合规范，如果格式不符合规范，则无法commit代码；</p>
 <pre><code class="ruby">#!/usr/bin/env ruby
 message_file = ARGV[0]
 message = File.read(message_file)
@@ -204,7 +204,7 @@ end
 <p>这样，问题1，2都解决了，开发人员必须先创建任务，获得任务标记，按照格式写在Commit Message上才能成功commit代码。</p>
 <p>为什么要这么严格要求规范呢？一个为了是Git Log看起来整洁清晰，另外一个是，为了解决上面说的问题3和4『为了方便，开发人员常常完成任务没有及时更新状态』、『有时做一些很小的修改，我们还需要特地创建任务和更新状态，确实很麻烦』，现在有了结构化的信息，我们就能实现自动化的任务更新了。</p>
 <p>我们搭建了一个服务器系统，用于接收Git的Hook API通知。每当用户提交修改，服务器收到Hook API通知后，就会解析Commit Message，然后通过JIRA API向该任务添加Worklog，如果尾部标记了<code>*close</code>，那么就会把任务更新状态为<code>Done</code>。</p>
-<p>至于问题4，对于小改动，我们允许开发人员通过Commit Message来创建任务。正如在上面脚本可以看到的，除了JIRA的任务标识，三类任务标记也会放行：<code>GIT</code>、<code>IMP</code>、<code>FIX</code>。我们可以通过<code>IMP</code>标记创建一个Improvement类的JIRA任务，通过<code>FIX</code>标记来创建一个Bug Fix类的JIRA任务，而<code>GIT</code>标记不会创建任务，它主要用于处理Merge等Git操作情况下的无任务Commit。下面例子创建了一个Bug Fix任务并把状态更新为完成：</p>
+<p>至于问题4，对于小改动，我们允许开发人员通过Commit Message来创建任务。正如在上面脚本可以看到的，除了JIRA的任务标识，三类任务标记也会放行：<code>GIT</code>、<code>IMP</code>、<code>FIX</code>。我们可以通过<code>IMP</code>标记创建一个Improvement类的JIRA任务；通过<code>FIX</code>标记来创建一个Bug Fix类的JIRA任务；而<code>GIT</code>标记不会创建任务，它主要用于处理Merge等Git操作情况下的无任务Commit。提交下面这个Commit Message，系统会自动创建了一个Bug Fix的需求任，并把状态更新为完成：</p>
 <blockquote>
 <p>[FIX] Fix the manual sleep crash</p>
 <p>Update the algorithm to 1.9.7.1 to fix the crash<br>This crash happen when user tag sleep and sync with some sleep data</p>
@@ -213,35 +213,35 @@ end
 <p>基本上，关于需求管理的约束机制和自动化流程大概就是这些。</p>
 <h3 id="2-版本管理"><a href="#2-版本管理" class="headerlink" title="2. 版本管理"></a>2. 版本管理</h3><p>我们使用<a href="https://www.atlassian.com/git/tutorials/comparing-workflows" target="_blank" rel="external">Git Flow</a>来进行版本管理控制，它相对于<a href="https://guides.github.com/introduction/flow/" target="_blank" rel="external">GitHub Flow</a>更适合在产品开发中快速迭代，这种代码管理模式应该已经广泛使用了，网上有很多相关资料，具体流程步骤这里就不细说了。<br>另外，我们鼓励使用Git客户端SourceTree，它集成了Git Flow的一些基本操作。如果严格遵循Git Flow的流程进行版本管理控制，那么我们只用管开始和结束一个Feature/Release/Hotfix，基本上是不用手动merge分支的。</p>
 <p><img src="https://ww4.sinaimg.cn/large/006tNbRwgy1fdceclzy7vj30ce0di3zd.jpg" style="width:223px"></p>
-<p>除了严格遵循Git Flow流程外，我们在Git操作上也有一些约定规范，譬如尽量用Rebase代替Merge，避免引入多余的Merge等。</p>
-<h3 id="3-代码审查"><a href="#3-代码审查" class="headerlink" title="3. 代码审查"></a>3. 代码审查</h3><p>说到Code Review，我们也算经过很多努力才落实下来的一步流程。落实Code Review不仅可以保证项目的代码质量，更重要的是，可以让项目成员间熟悉各自的模块，互相学习和监督。</p>
-<p>我们搭建了一个基于<a href="https://www.phacility.com/phabricator/" target="_blank" rel="external">Phabricator</a>的平台系统来进行Code Review，Phabricator原本是Facebook内部的Code Review工具。后来它的核心工程师Evan Priestley离开Facebook并成立Phacility公司继续这个产品的开发。</p>
-<p>Phabricator支持很多功能，其中我们比较常用的有两个：</p>
+<p>除了要求严格遵循Git Flow流程外，我们在Git操作上也有一些约定规范，譬如尽量用Rebase代替Merge，避免引入多余的Merge等。</p>
+<h3 id="3-代码审查"><a href="#3-代码审查" class="headerlink" title="3. 代码审查"></a>3. 代码审查</h3><p>说到Code Review，我们也算经过很多努力才落实下来的一步流程。落实 Code Review 不仅可以保证项目的代码质量，更重要的是，可以让项目成员间熟悉各自的模块，互相学习和监督。</p>
+<p>我们搭建了一个基于 <a href="https://www.phacility.com/phabricator/" target="_blank" rel="external">Phabricator </a>的平台系统来进行 Code Review，Phabricator原本是 Facebook 内部的 Code Review 工具。后来它的核心工程师Evan Priestley离开Facebook并成立了一家叫Phacility的公司继续这个产品的开发。</p>
+<p>Phabricator 支持很多功能，其中我们比较常用的有两个：</p>
 <ol>
-<li>Pre-Commit Code Review，即代码提交前预审查，先提交审查，审查过了再提交代码，避免提交未审核的代码到Repo；</li>
+<li>Pre-Commit Code Review，即代码提交前预审查，先提交审查，审查过了再提交代码，避免提交未审核的代码到 Repo；</li>
 <li>Post-Commit Auditing，即代码提交后审查，先提交代码，系统会发邮件给其他项目成员请求审查；</li>
 </ol>
-<p>一开始的时候，我们执行Post-Commit Aduitting，每次代码提交都会触发系统都会生成一个审查请求发送到项目组，项目成员审查后可以提交comment发表疑问或者建议，并且可以选择是否通过审查，这里有官方的一个<a href="https://secure.phabricator.com/D13641" target="_blank" rel="external">Demo</a>。但是最后，我们发现这些审查请求邮件常常会被无视，然后Code Review还是没有执行下来。</p>
-<p>于是，我们后面转向了Pre-Commit Code Review，即提交前预审查的方案，即未审查的代码不能Push代码到远程代码服务器。这种机制让情况稍微好了一点，但这也出现很多问题：</p>
+<p>一开始的时候，我们执行 Post-Commit Aduitting，每次代码提交都会触发系统都会生成一个审查请求发送到项目组，项目成员审查后可以提交comment 发表疑问或者建议，并且可以选择审查是否通过，这里有官方的一个 <a href="https://secure.phabricator.com/D13641" target="_blank" rel="external">Demo</a>。但是到了最后，我们发现这些审查请求邮件常常会被无视，然后Code Review还是没有执行下来。</p>
+<p>于是，我们后面转向了 Pre-Commit Code Review，即提交前预审查的方案，即未审查的代码不能Push代码到远程代码服务器。这种机制让情况稍微好了一点，但这也出现很多问题：</p>
 <ol>
-<li>步骤繁琐；预审查方案需要依赖一个命令行工具<a href="https://www.phacility.com/phabricator/arcanist/" target="_blank" rel="external">Arcanist</a>，每次提交都要通过命令行输入不少信息。</li>
-<li>非强制性；『Commit前必须提交Code Review』和『Code Review通过了才能Push』这两个要求并无强制约束机制，成员常常不遵循；</li>
+<li>步骤繁琐；预审查方案需要依赖一个命令行工具 <a href="https://www.phacility.com/phabricator/arcanist/" target="_blank" rel="external">Arcanist</a>，每次发起审查都要通过命令行输入一堆信息。</li>
+<li>非强制性；『 Commit前必须提交 Code Review』和『 Code Review 通过了才能 Push 』这两个要求并无强制约束机制，成员常常不遵循；</li>
 </ol>
-<p>对于问题1，我们的解决方案也是通过Git Hook的本地脚本来解决，我们在commit代码之后，.git/hook目录下的post-commit脚本会被触发，我们把所有提交的命令行操作全部写在这个脚本上，这样便完成了Code Review的自动提交。而问题2，我们用类似的办法解决，因为pre-push脚本可以阻止用户push代码，我们只要在pre-push脚本加上了这样一个约束策略：通过Phabricator的API查询该Commit是否已经通过审查来决定这个提交能否push到服务器。</p>
-<p>这样，我们便建立了这样一个理想的强制代码审查机制：一旦Commit代码，自动发起审查请求；只有审查完成，代码才能被Push到服务器。</p>
-<h3 id="4-持续集成"><a href="#4-持续集成" class="headerlink" title="4. 持续集成"></a>4. 持续集成</h3><p>在以前，持续集成一般只常见于服务器端开发，移动客户端（至少iOS）开发很少会做持续集成。而苹果的封闭性也确实让iOS的持续集成带来不少问题。现在越来越多工具、服务、平台的出现，使得持续集成的难度和成本也减低了不少，持续集成在社区也获得日益增多的关注。</p>
-<p>我认为，持续集成在项目流程中是很必要也是很重要的。因为它可以让我们保证项目工程的稳定性以及软件的持续可用，所以大大减低了项目的风险。我们的持续集成主要使用了Travis+Fastlane的技术栈。每一次代码提交，都会触发Travis运行脚本做这些事情：</p>
+<p>对于问题1，我们的解决方案也是通过Git Hook的本地脚本来解决，我们在 commit 代码之后，.git/hook目录下的 post-commit 脚本会被触发，我们把所有提交的命令行操作全部写在这个脚本上，这样便实现了审查请求的自动化提交。而问题2，我们也用了类似的办法解决，因为 pre-push 脚本可以阻止用户 push 代码，我们只要在 pre-push 脚本加上了这样一个约束策略：通过Phabricator的API查询该 commit 是否已经通过审查，如果没有则拒绝这次 push。</p>
+<p>这样，我们便建立了这样一个理想的强制代码审查机制：一旦 commit 代码，自动发起审查请求；只有审查完成，代码才能被 push 到服务器。</p>
+<h3 id="4-持续集成"><a href="#4-持续集成" class="headerlink" title="4. 持续集成"></a>4. 持续集成</h3><p>在以前，持续集成一般只常见于服务器端开发，移动客户端（至少 iOS）开发很少会做持续集成。而苹果的封闭性也确实让 iOS 的持续集成带来不少问题。现在越来越多工具、服务、平台的出现，使得持续集成的难度和成本也减低了不少，持续集成在社区也获得日益增多的关注。</p>
+<p>我认为，持续集成在项目流程中是很必要也是很重要的。因为它可以让我们保证项目工程的稳定性以及软件的持续可用，所以大大减低了项目的风险。我们的持续集成主要使用了 Travis+Fastlane 的技术栈。每一次代码提交，都会触发 Travis 运行脚本做这些事情：</p>
 <ol>
-<li>Clone项目代码，下载和安装Pod依赖和内部最新SDK/Library依赖；</li>
-<li>根据当前分支做环境配置，譬如：测试环境使用Enterprise证书，线上环境使用Appstore证书等；</li>
-<li>更新Build Number；</li>
-<li>编译项目工程并打包；</li>
-<li>执行单元测试；</li>
-<li>根据当前分支，上传IPA包到Hocky或者iTunesConnect；</li>
-<li>发送成功或者失败的通知到邮件和Slack；</li>
+<li>集成依赖；包括Clone 项目代码，下载和安装 Pod 依赖和内部最新 SDK/Library 依赖；</li>
+<li>环境配置，譬如：根据当前分支而使用不同环境，测试环境使用 Enterprise 证书，线上环境使用 Appstore 证书等；</li>
+<li>版本迭代；自动更新唯一的版本标识 Build Number；</li>
+<li>编译打包；完成配置就可以对项目进行整体编译；</li>
+<li>单元测试；执行项目下的单元测试用例，没有通过也会导致集成失败；</li>
+<li>持续交付；根据当前分支，上传 IPA 包到 Hocky 或者 iTunesConnect；</li>
+<li>失败告警；上面流程一旦失败，相关的告警通知到发送到相关邮箱和 Slack channel 中；</li>
 </ol>
-<p>以上大部分操作都可以通过Fastlane和相关套件很简单地完成，社区的方案基本都大同小异，这里就不详细介绍了。</p>
-<h3 id="5-测试分发"><a href="#5-测试分发" class="headerlink" title="5. 测试分发"></a>5. 测试分发</h3><p>针对测试和上线环境的测试分发，我们分别使用了Hocky和Testflight来作为分发平台。</p>
+<p>以上大部分操作都可以通过 Fastlane 和相关套件很简单地完成，社区的方案基本都大同小异，这里就不详细介绍了。</p>
+<h3 id="5-交付分发"><a href="#5-交付分发" class="headerlink" title="5. 交付分发"></a>5. 交付分发</h3><p>从上面也也可看到，我们的持续集成流程也实现了持续交付。对于测试和线上环境，我们分别使用了 Hocky 和 Testflight 来作为交付和分发平台。</p>
 <p>Hocky其实就是类似国内的fir.im, 蒲公英这些平台，通过企业证书签名，可以让内部测试人员方便地下载安装测试；至于线上环境，原本我们同样使用Hocky，只是换了AdHoc证书来进行的线上环境测试的。但是，后面我们发现Testflight是一个更好的方案，原因有：</p>
 <ol>
 <li>同一个包，可以同时做Testflight测试和提交AppStore，保证了包一致性。</li>
@@ -255,8 +255,8 @@ end
 <li><code>*skip-ci</code><br><em>跳过持续集成</em></li>
 <li><code>*skip-cr</code><br><em>跳过强制Code Review</em></li>
 </ul>
-<h3 id="7-Weely-Build"><a href="#7-Weely-Build" class="headerlink" title="7. Weely Build"></a>7. Weely Build</h3><p>这算是一个题外话了。因为我每周都需要输出一个Weekly Build，具体工作就是通过邮件发出包括最新安装包的下载链接，以及所有更新日志。</p>
-<p>有天我自动化强迫症又发作，于是把这块工作也让程序完成了。上面说到我们搭建了的服务系统，可以接收Git Hook的通知和调用JIRA API。于是基于它们，我写了另外一个服务用于收集Git日志和任务信息，自动生成了了最近N天的更新日志，大概效果是这样的：</p>
+<h3 id="7-Weely-Build"><a href="#7-Weely-Build" class="headerlink" title="7. Weely Build"></a>7. Weely Build</h3><p>这算是一个题外话了。因为我每周都需要输出一个Weekly Build，具体工作就是，整理出本周的所有更新日志、最新安装包下载链接，并发送邮件到相关邮件组。</p>
+<p>有天我自动化强迫症又发作，于是把这块工作也让程序完成了。上面说到我们搭建了的服务系统，可以接收 Git Hook 的通知和调用 JIRA API 。于是基于它们，我写了另外一个服务用于收集 Git 日志和任务信息，自动生成了了最近N天的更新日志，大概效果是这样的：</p>
 <p><img src="https://ww3.sinaimg.cn/large/006tNbRwgy1fdcjwerl28j31ba17w762.jpg" style="width:851px"></p>
 
       
